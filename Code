@@ -1,0 +1,70 @@
+import numpy as np
+import matplotlib.pyplot as plt  
+import pandas as pd
+import seaborn as sns
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import mean_squared_error
+
+from warnings import filterwarnings
+filterwarnings(action='ignore')
+
+wine = pd.read_csv("winequality-red.csv")
+wine.sample(25)
+wine.info()
+wine.describe()
+wine.groupby('quality').mean()
+sns.countplot(wine['quality'])
+plt.show()
+wine.plot(kind ='box',subplots = True, layout =(4,4),sharex = False)
+wine['fixed acidity'].plot(kind ='box')
+plt.show()
+wine.hist(figsize=(10,10),bins=50)
+plt.show()
+wine.sample(5)
+
+wine['quality'].unique()
+
+# If wine quality is 7 or above then will consider as good quality wine
+wine['goodquality'] = [1 if x >= 7 else 0 for x in wine['quality']]
+wine.sample(5)
+
+wine['goodquality'].value_counts()
+X = wine.drop(['quality','goodquality'], axis = 1)
+Y = wine['goodquality']
+print(X)
+print(Y)
+
+from sklearn.ensemble import ExtraTreesClassifier
+classifiern = ExtraTreesClassifier()
+classifiern.fit(X,Y)
+score = classifiern.feature_importances_
+print(score)
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size=0.3,random_state=7)
+
+model = LinearRegression()
+
+model.fit(X_train, Y_train)
+
+Y_pred = model.predict(X_test)
+
+mse = mean_squared_error(Y_test, Y_pred)
+
+columns = ["Model", "Mean Squared Error"]
+model_res = pd.DataFrame(columns=columns)
+
+model_res.loc[len(model_res)] = ['LinearRegression', mse]
+
+
+print(model_res)
+
+model = LogisticRegression()
+model.fit(X_train,Y_train)
+y_pred = model.predict(X_test)
+
+from sklearn.metrics import accuracy_score,confusion_matrix
+
+model_res.loc[len(model_res)] = ['LogisticRegression', accuracy_score(Y_test,y_pred)]
+model_res
